@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import './App.css';
 
 function ProductCategoryRow({category}){
@@ -24,11 +25,21 @@ function ProductRow({product}){
   );
 }
 
-function ProductTable({products}){
+function ProductTable({products, filterText, inStockOnly}){
   const rows = [];
   let lastCategory = null;
 
   products.forEach((product) => {
+    if (
+      product.name.toLowerCase().indexOf(
+        filterText.toLowerCase()
+      ) === -1
+    ) {
+      return;
+    }
+    if (inStockOnly && !product.stocked) {
+      return;
+    }
     if(product.category !== lastCategory){
       rows.push(
         <ProductCategoryRow category={product.category} key={product.category} />
@@ -53,23 +64,27 @@ function ProductTable({products}){
   );
 }
 
-function SearchBar(){
+function SearchBar({filterText, inStockOnly, onFilterTextChange, onInStockOnlyChange}){
   return(
     <form>
-      <input type="text" placeholder="Search Sonam..." /><br/>
+      <input type="text" value={filterText} placeholder="Search..." onChange={(e) => onFilterTextChange(e.target.value)} /><br/>
       <label>
-        <input type="checkbox" />
-        {' '} Only show products in Faria's stock
+        <input type="checkbox" onChange={(e) => onInStockOnlyChange(e.target.checked)} />
+        {' '} Only show products in stock
       </label>
     </form>
   );
 }
 
 function FilterableProductTable({products}){
+
+  const [filterText, setFilterText] = useState('');
+  const [inStockOnly, setInStockOnly] = useState(false);
+
   return(
     <div>
-      <SearchBar />
-      <ProductTable products={products} />
+      <SearchBar filterText={filterText} inStockOnly={inStockOnly} onFilterTextChange={setFilterText} onInStockOnlyChange={setInStockOnly} />
+      <ProductTable products={products} filterText={filterText} inStockOnly={inStockOnly} />
     </div>
   );
 }
